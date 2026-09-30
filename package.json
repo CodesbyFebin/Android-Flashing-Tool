@@ -1,0 +1,1 @@
+{"name":"android-flashing-tool","version":"1.1.0","private":true,"type":"module","scripts":{"build":"node scripts/build.mjs","check":"node --check web/app.js"},"engines":{"node":">=22"}}

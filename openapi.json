@@ -1,0 +1,371 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "dh-flash Local Device API",
+    "version": "1.1.0",
+    "description": "Loopback runtime. No arbitrary command endpoint. Restricted signed firmware execution."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8765"
+    }
+  ],
+  "security": [
+    {
+      "localSession": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "localSession": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-DH-Token"
+      }
+    }
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Runtime health",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Request rejected"
+          }
+        }
+      }
+    },
+    "/api/diagnostics": {
+      "get": {
+        "summary": "Configuration and capabilities",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Request rejected"
+          }
+        }
+      }
+    },
+    "/api/devices": {
+      "get": {
+        "summary": "ADB/Fastboot device probe",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Request rejected"
+          }
+        }
+      }
+    },
+    "/api/operations": {
+      "get": {
+        "summary": "Operation list and execution logs",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Request rejected"
+          }
+        }
+      }
+    },
+    "/api/evidence/{id}": {
+      "get": {
+        "summary": "Signed final evidence",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Request rejected"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{32}$"
+            }
+          }
+        ]
+      }
+    },
+    "/api/openapi.json": {
+      "get": {
+        "summary": "API schema",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Request rejected"
+          }
+        }
+      }
+    },
+    "/api/plans": {
+      "post": {
+        "summary": "plans",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "serial",
+                  "firmware_id"
+                ],
+                "properties": {
+                  "serial": {
+                    "type": "string"
+                  },
+                  "firmware_id": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful result"
+          },
+          "400": {
+            "description": "Policy, request or verification rejected"
+          }
+        }
+      }
+    },
+    "/api/approvals": {
+      "post": {
+        "summary": "approvals",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "plan_id",
+                  "acknowledgements"
+                ],
+                "properties": {
+                  "plan_id": {
+                    "type": "string"
+                  },
+                  "acknowledgements": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "backup",
+                      "risk",
+                      "confirmation"
+                    ],
+                    "properties": {
+                      "backup": {
+                        "type": "boolean",
+                        "const": true
+                      },
+                      "risk": {
+                        "type": "boolean",
+                        "const": true
+                      },
+                      "confirmation": {
+                        "type": "string",
+                        "const": "FLASH"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful result"
+          },
+          "400": {
+            "description": "Policy, request or verification rejected"
+          }
+        }
+      }
+    },
+    "/api/execute": {
+      "post": {
+        "summary": "execute",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "plan_id",
+                  "approval_id"
+                ],
+                "properties": {
+                  "plan_id": {
+                    "type": "string"
+                  },
+                  "approval_id": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful result"
+          },
+          "400": {
+            "description": "Policy, request or verification rejected"
+          }
+        }
+      }
+    },
+    "/api/reboot": {
+      "post": {
+        "summary": "reboot",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "serial",
+                  "mode"
+                ],
+                "properties": {
+                  "serial": {
+                    "type": "string"
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "bootloader",
+                      "recovery",
+                      "system"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful result"
+          },
+          "400": {
+            "description": "Policy, request or verification rejected"
+          }
+        }
+      }
+    },
+    "/api/verify-evidence": {
+      "post": {
+        "summary": "verify evidence",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "payload",
+                  "public_key",
+                  "signature"
+                ],
+                "properties": {
+                  "payload": {
+                    "type": "object"
+                  },
+                  "public_key": {
+                    "type": "string"
+                  },
+                  "signature": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful result"
+          },
+          "400": {
+            "description": "Policy, request or verification rejected"
+          }
+        }
+      }
+    },
+    "/api/firmware": {
+      "post": {
+        "summary": "Inspect signed firmware ZIP",
+        "parameters": [
+          {
+            "name": "X-Firmware-SHA256",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/zip": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Verified package metadata"
+          },
+          "400": {
+            "description": "Invalid or untrusted firmware"
+          }
+        }
+      }
+    },
+    "/session": {
+      "get": {
+        "security": [],
+        "summary": "Same-origin local session token",
+        "responses": {
+          "200": {
+            "description": "Token"
+          },
+          "403": {
+            "description": "Untrusted host/origin"
+          }
+        }
+      }
+    }
+  }
+}
