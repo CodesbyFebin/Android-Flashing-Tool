@@ -1,0 +1,32 @@
+# GitHub CODEOWNERS file
+# Defines who is automatically requested as a reviewer for pull requests
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Everyone
+* @CodesbyFebin
+
+# Backend/Runtime
+runtime.py @CodesbyFebin
+tests/ @CodesbyFebin
+package_firmware.py @CodesbyFebin
+requirements.txt @CodesbyFebin
+
+# Frontend/UI
+web/ @CodesbyFebin
+public/ @CodesbyFebin
+
+# Documentation
+*.md @CodesbyFebin
+docs/ @CodesbyFebin
+CONTRIBUTING.md @CodesbyFebin
+SECURITY.md @CodesbyFebin
+CHANGELOG.md @CodesbyFebin
+ROADMAP.md @CodesbyFebin
+
+# GitHub Configuration
+.github/ @CodesbyFebin
+.github/workflows/ @CodesbyFebin
+
+# Configuration
+.gitignore @CodesbyFebin
+LICENSE @CodesbyFebin
