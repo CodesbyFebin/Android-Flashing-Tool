@@ -1,0 +1,6 @@
+{
+  "name": "Clearance",
+  "description": "Know what you approve. Prove what happened. Android-first Solana app for reviewing payments, authorizing DePIN work, and keeping verifiable receipts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

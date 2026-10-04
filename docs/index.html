@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clearance · Know what you approve. Prove what happened.</title>
+<meta name="description" content="CLOCK IN Hackathon Submission — The Verifiable Receipt Engine for Solana Mobile. Pre-sign review cards and post-sign cryptographic receipts for Seeker.">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#00ff41;--primary-dim:rgba(0,255,65,.12);--primary-mid:rgba(0,255,65,.35);
+  --secondary:#00d46a;--tertiary:#0099ff;--accent:#7ee787;
+  --danger:#ff5f56;--warning:#ffbd2e;--error:#ff0055;
+  --bg:#010409;--bg-2:#0a0e14;--bg-3:#0d1117;--bg-card:#11161d;--bg-elev:#161b22;--bg-code:#1c2128;
+  --text:#e6edf3;--text-2:#8b949e;--text-3:#6e7681;
+  --border:#21262d;--border-2:#30363d;
+  --glow:0 0 12px rgba(0,255,65,.45),0 0 32px rgba(0,255,65,.15);
+  --glow-soft:0 0 8px rgba(0,255,65,.3);
+  --radius:6px;--radius-lg:10px;
+  --mono:ui-monospace,'SF Mono','Cascadia Mono','Courier New',monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--sans);background:var(--bg);color:var(--text);
+  line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:1000;
+  background:repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,255,65,.025) 2px 3px);
+  opacity:.4;
+}
+a{color:var(--primary);text-decoration:none;transition:color .2s}
+a:hover{color:var(--accent);text-shadow:var(--glow-soft)}
+h1,h2,h3,h4{font-family:var(--mono);line-height:1.2;letter-spacing:-.01em}
+code{font-family:var(--mono);background:var(--bg-code);padding:.15em .4em;border-radius:3px;font-size:.88em;color:var(--accent)}
+pre{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;overflow-x:auto;font-family:var(--mono);font-size:.82rem;line-height:1.6}
+.container{width:min(100% - 2rem,1280px);margin-inline:auto}
+.grid{display:grid;gap:1.5rem}
+.cols-2{grid-template-columns:1fr}.cols-3{grid-template-columns:1fr}.cols-4{grid-template-columns:1fr}
+@media(min-width:768px){.cols-2{grid-template-columns:repeat(2,1fr)}.cols-3{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:1024px){.cols-4{grid-template-columns:repeat(4,1fr)}}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:100;background:rgba(1,4,9,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:60px;gap:1rem}
+.brand{display:flex;align-items:center;gap:.6rem;font-family:var(--mono);font-weight:700;font-size:1.05rem;color:var(--primary)}
+.brand svg{width:24px;height:24px}
+.nav-links{display:none;list-style:none;gap:1.2rem;align-items:center}
+.nav-links a{color:var(--text-2);font-size:.85rem;font-family:var(--mono);padding:.4rem 0;position:relative}
+.nav-links a:hover,.nav-links a.active{color:var(--primary)}
+.nav-links a.active::after{content:"";position:absolute;bottom:-2px;left:0;right:0;height:2px;background:var(--primary);box-shadow:var(--glow-soft)}
+@media(min-width:1024px){.nav-links{display:flex}}
+
+/* HERO */
+.hero{position:relative;padding:5rem 0 4rem;overflow:hidden;border-bottom:1px solid var(--border)}
+.hero-banner{position:relative;border-radius:var(--radius-lg);overflow:hidden;background:linear-gradient(135deg,#0d1117 0%,#161b22 50%,#0d1117 100%);border:1px solid var(--border);min-height:420px}
+.hero-banner::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 50%,rgba(0,255,65,.08),transparent 60%),radial-gradient(ellipse 60% 50% at 80% 70%,rgba(0,153,255,.05),transparent 60%);pointer-events:none}
+#matrix-canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.15;pointer-events:none}
+.hero-inner{position:relative;z-index:2;display:grid;grid-template-columns:1fr;gap:3rem;align-items:center;padding:3rem}
+@media(min-width:1024px){.hero-inner{grid-template-columns:1.1fr .9fr}}
+.hero-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.4rem .9rem;background:var(--primary-dim);border:1px solid var(--primary-mid);border-radius:20px;font-family:var(--mono);font-size:.75rem;color:var(--primary);margin-bottom:1rem}
+.hero-badge::before{content:"●";animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.35}}
+.hero h1{font-size:clamp(2rem,4.5vw,3.4rem);font-weight:800;margin-bottom:1rem;line-height:1.1}
+.hero h1 .accent{color:var(--primary);text-shadow:var(--glow)}
+.hero-lede{color:var(--text-2);font-size:1.05rem;max-width:58ch;margin-bottom:1.5rem;line-height:1.7}
+.hero-stats{display:flex;flex-wrap:wrap;gap:1.5rem;margin-bottom:1.5rem}
+.hero-stat{display:flex;align-items:center;gap:.4rem;font-size:.82rem;color:var(--text-2);font-family:var(--mono)}
+.hero-stat strong{color:var(--text);font-weight:700}
+.hero-cta{display:flex;flex-wrap:wrap;gap:.8rem;margin-bottom:1.5rem}
+.btn{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--mono);font-size:.88rem;font-weight:700;padding:.75rem 1.4rem;border-radius:var(--radius);cursor:pointer;border:1px solid transparent;transition:all .2s;letter-spacing:.02em}
+.btn-primary{background:var(--primary);color:var(--bg);box-shadow:var(--glow)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 20px rgba(0,255,65,.6);color:var(--bg)}
+.btn-ghost{background:transparent;color:var(--primary);border-color:var(--primary)}
+.btn-ghost:hover{background:var(--primary-dim);transform:translateY(-2px)}
+.btn-muted{background:transparent;color:var(--text-2);border-color:var(--border)}
+.btn-muted:hover{color:var(--primary);border-color:var(--primary)}
+.btn .arrow{transition:transform .2s}
+.btn:hover .arrow{transform:translateX(4px)}
+
+/* SECTIONS */
+.section{padding:5rem 0;border-top:1px solid var(--border)}
+.section-head{margin-bottom:2.5rem}
+.section-head .eyebrow{font-family:var(--mono);font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;color:var(--secondary);margin-bottom:.5rem}
+.section-head .eyebrow::before{content:"// "}
+.section-title{font-size:clamp(1.6rem,3.2vw,2.2rem);margin-bottom:.8rem}
+.section-lede{color:var(--text-2);max-width:72ch;font-size:1.02rem}
+
+/* CARDS */
+.card{position:relative;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;transition:transform .2s,border-color .2s,box-shadow .2s}
+.card:hover{transform:translateY(-3px);border-color:var(--primary-mid);box-shadow:var(--glow-soft)}
+.card h3{font-family:var(--mono);font-size:1.05rem;margin-bottom:.6rem}
+.card h3 a{color:var(--text);text-decoration:none}
+.card h3 a:hover{color:var(--primary)}
+.card p{color:var(--text-2);font-size:.92rem;margin-bottom:1rem}
+
+/* PHONE MOCKUP */
+.phone-section{background:var(--bg-2)}
+.phone-grid{display:grid;grid-template-columns:1fr;gap:3rem;align-items:center}
+@media(min-width:1024px){.phone-grid{grid-template-columns:1fr 1.2fr}}
+.phone-frame{position:relative;width:100%;max-width:380px;margin:0 auto;background:#000;border-radius:40px;padding:12px;box-shadow:0 0 0 2px #1a1a1a,0 0 0 4px #0a0a0a,0 30px 80px rgba(0,0,0,.8),0 0 60px rgba(0,255,65,.1)}
+.phone-screen{position:relative;width:100%;background:var(--bg);border-radius:30px;overflow:hidden;display:flex;flex-direction:column;min-height:680px}
+.phone-header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px 8px;background:var(--bg-2);border-bottom:1px solid var(--border)}
+.phone-header .brand{font-size:.95rem}
+.phone-header .status{font-family:var(--mono);font-size:.7rem;color:var(--text-3);display:flex;align-items:center;gap:4px}
+.phone-header .status .dot{width:6px;height:6px;border-radius:50%;background:var(--primary);box-shadow:0 0 6px var(--primary);animation:pulse 2s infinite}
+.phone-tabs{display:flex;gap:.5rem;padding:.75rem;background:var(--bg-2);border-bottom:1px solid var(--border)}
+.phone-tab{flex:1;padding:.6rem .5rem;background:transparent;border:1px solid var(--border);border-radius:var(--radius);color:var(--text-2);font-family:var(--mono);font-size:.75rem;font-weight:700;cursor:pointer;transition:all .2s;text-align:center}
+.phone-tab:hover{color:var(--primary);border-color:var(--primary-mid)}
+.phone-tab.active{background:var(--primary-dim);color:var(--primary);border-color:var(--primary);box-shadow:var(--glow-soft)}
+.phone-content{flex:1;overflow-y:auto;padding:16px 20px;max-height:520px}
+.phone-content::-webkit-scrollbar{width:0}
+
+/* NOW SCREEN */
+.wallet-card{background:linear-gradient(135deg,rgba(0,255,65,.08),rgba(0,212,106,.04));border:1px solid var(--primary-mid);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1rem}
+.wallet-card .label{font-family:var(--mono);font-size:.7rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem}
+.wallet-card .address{font-family:var(--mono);font-size:.8rem;color:var(--text-2);margin-bottom:.8rem;word-break:break-all}
+.wallet-card .balance{font-family:var(--mono);font-size:1.8rem;font-weight:800;color:var(--primary);text-shadow:var(--glow-soft);margin-bottom:.2rem}
+.wallet-card .balance-sub{font-family:var(--mono);font-size:.75rem;color:var(--text-2)}
+.token-row{display:flex;align-items:center;justify-content:space-between;padding:.75rem;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:.5rem}
+.token-row .left{display:flex;align-items:center;gap:.6rem}
+.token-row .icon{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-size:.8rem;font-weight:700}
+.token-row .icon.sol{background:rgba(0,255,65,.15);color:var(--primary)}
+.token-row .icon.skr{background:rgba(0,153,255,.15);color:var(--tertiary)}
+.token-row .icon.warn{background:rgba(255,95,86,.15);color:var(--danger)}
+.token-row .name{font-family:var(--mono);font-size:.85rem;font-weight:700;color:var(--text)}
+.token-row .ticker{font-family:var(--mono);font-size:.7rem;color:var(--text-3)}
+.token-row .amount{font-family:var(--mono);font-size:.85rem;color:var(--text);text-align:right}
+.token-row .usd{font-family:var(--mono);font-size:.7rem;color:var(--text-3);text-align:right}
+
+.cooldown-card{background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--warning);border-radius:var(--radius-lg);padding:1rem;margin-bottom:.75rem}
+.cooldown-card .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem}
+.cooldown-card .label{font-family:var(--mono);font-size:.7rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.1em}
+.cooldown-card .badge{font-family:var(--mono);font-size:.65rem;padding:.2rem .5rem;border-radius:8px;background:rgba(255,189,46,.15);color:var(--warning)}
+.cooldown-card .badge.ready{background:rgba(0,255,65,.15);color:var(--primary)}
+.cooldown-card .timer{font-family:var(--mono);font-size:1.6rem;font-weight:800;color:var(--warning);text-shadow:0 0 10px rgba(255,189,46,.3);margin-bottom:.3rem}
+.cooldown-card .timer.ready{color:var(--primary);text-shadow:var(--glow)}
+.cooldown-card .sub{font-family:var(--mono);font-size:.7rem;color:var(--text-2)}
+.cooldown-card .progress{height:3px;background:var(--bg-elev);border-radius:2px;margin-top:.6rem;overflow:hidden}
+.cooldown-card .progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--secondary));transition:width 1s linear}
+
+.claim-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:.75rem}
+.claim-card .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem}
+.claim-card .season{font-family:var(--mono);font-size:.85rem;font-weight:700;color:var(--text)}
+.claim-card .status{font-family:var(--mono);font-size:.65rem;padding:.15rem .4rem;border-radius:6px}
+.claim-card .status.claimable{background:rgba(0,255,65,.15);color:var(--primary)}
+.claim-card .status.claimed{background:rgba(0,153,255,.15);color:var(--tertiary)}
+.claim-card .meta{font-family:var(--mono);font-size:.75rem;color:var(--text-2);margin-bottom:.2rem}
+.claim-card .amount{font-family:var(--mono);font-size:1rem;color:var(--primary);font-weight:700}
+.claim-card .warning{font-family:var(--mono);font-size:.7rem;color:var(--warning);margin-top:.4rem;padding:.4rem;background:rgba(255,189,46,.08);border-radius:var(--radius)}
+
+/* CLEAR SCREEN */
+.clearance-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:1rem}
+.clearance-header{padding:.8rem 1rem;background:var(--bg-elev);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.clearance-header .tag{font-family:var(--mono);font-size:.7rem;color:var(--primary);text-transform:uppercase;letter-spacing:.1em}
+.clearance-header .tag::before{content:"// "}
+.clearance-header .status{font-family:var(--mono);font-size:.65rem;padding:.2rem .5rem;border-radius:8px;background:var(--primary-dim);color:var(--primary)}
+.clearance-body{padding:1rem}
+.clearance-row{display:flex;justify-content:space-between;align-items:flex-start;padding:.6rem 0;border-bottom:1px solid var(--border-2)}
+.clearance-row:last-child{border-bottom:none}
+.clearance-row .k{font-family:var(--mono);font-size:.65rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem}
+.clearance-row .v{font-family:var(--mono);font-size:.8rem;color:var(--text);word-break:break-all}
+.clearance-row .v.amount{font-size:1.1rem;font-weight:700;color:var(--primary)}
+.clearance-row .v.hash{font-size:.7rem;color:var(--text-2)}
+
+.instruction-card{background:var(--bg-elev);border:1px solid var(--border);border-left:3px solid var(--primary);border-radius:var(--radius);padding:.8rem;margin-bottom:.75rem}
+.instruction-card .kind{font-family:var(--mono);font-size:.8rem;color:var(--primary);font-weight:700;margin-bottom:.5rem}
+.instruction-card .detail{font-family:var(--mono);font-size:.72rem;color:var(--text-2);line-height:1.6}
+.instruction-card .detail .kv{display:flex;justify-content:space-between;padding:.15rem 0;gap:.5rem}
+.instruction-card .detail .kv .k{color:var(--text-3);flex-shrink:0}
+.instruction-card .detail .kv .v{color:var(--text);text-align:right;word-break:break-all}
+
+.warning-card{background:rgba(255,95,86,.08);border:1px solid rgba(255,95,86,.3);border-left:3px solid var(--danger);border-radius:var(--radius);padding:.8rem;margin-bottom:.75rem}
+.warning-card .title{font-family:var(--mono);font-size:.8rem;color:var(--danger);font-weight:700;margin-bottom:.3rem}
+.warning-card .body{font-family:var(--mono);font-size:.72rem;color:var(--text-2);line-height:1.5}
+
+.info-card{background:rgba(0,153,255,.08);border:1px solid rgba(0,153,255,.3);border-left:3px solid var(--tertiary);border-radius:var(--radius);padding:.8rem;margin-bottom:.75rem}
+.info-card .title{font-family:var(--mono);font-size:.8rem;color:var(--tertiary);font-weight:700;margin-bottom:.3rem}
+.info-card .body{font-family:var(--mono);font-size:.72rem;color:var(--text-2);line-height:1.5}
+
+.decision-row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:1rem}
+.decision-row button{padding:.75rem;font-size:.8rem}
+.btn-danger{background:var(--danger);color:#000;border-color:var(--danger)}
+.btn-danger:hover{transform:translateY(-2px);box-shadow:0 0 20px rgba(255,95,86,.5);color:#000}
+
+/* PROOF SCREEN */
+.receipt-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:.75rem}
+.receipt-card .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem}
+.receipt-card .top .id{font-family:var(--mono);font-size:.8rem;color:var(--text)}
+.receipt-card .top .badge{font-family:var(--mono);font-size:.65rem;padding:.15rem .4rem;border-radius:6px}
+.badge.confirmed{background:rgba(0,255,65,.15);color:var(--primary)}
+.badge.pending{background:rgba(255,189,46,.15);color:var(--warning)}
+.badge.rejected{background:rgba(255,95,86,.15);color:var(--danger)}
+.badge.finalized{background:rgba(0,153,255,.15);color:var(--tertiary)}
+.receipt-card .row{display:flex;justify-content:space-between;padding:.25rem 0;font-family:var(--mono);font-size:.75rem}
+.receipt-card .row .k{color:var(--text-3)}
+.receipt-card .row .v{color:var(--text)}
+.receipt-card .sig{font-family:var(--mono);font-size:.65rem;color:var(--text-2);word-break:break-all;padding:.5rem;background:var(--bg-elev);border-radius:var(--radius);margin-top:.5rem}
+
+.settlement-anim{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1rem;text-align:center;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:1rem}
+.settlement-anim .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:.8rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.settlement-anim .check{width:40px;height:40px;border-radius:50%;background:var(--primary);display:grid;place-items:center;margin-bottom:.8rem;animation:popIn .4s}
+.settlement-anim .check svg{width:24px;height:24px;color:#000}
+@keyframes popIn{from{transform:scale(0)}to{transform:scale(1)}}
+.settlement-anim h4{font-family:var(--mono);font-size:1rem;color:var(--primary);margin-bottom:.3rem}
+.settlement-anim p{font-family:var(--mono);font-size:.75rem;color:var(--text-2)}
+
+/* FEATURE TABLE */
+.feature-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.82rem;margin:1.5rem 0}
+.feature-table th,.feature-table td{border:1px solid var(--border);padding:.6rem .8rem;text-align:left}
+.feature-table th{background:var(--bg-elev);color:var(--primary);font-weight:700;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em}
+.feature-table tr:hover{background:var(--bg-card)}
+.feature-table .num{color:var(--primary);font-weight:700}
+.feature-table .priority{display:inline-block;padding:.15rem .4rem;border-radius:4px;font-size:.7rem;font-weight:700}
+.feature-table .priority.critical{background:rgba(0,255,65,.15);color:var(--primary)}
+.feature-table .priority.high{background:rgba(0,153,255,.15);color:var(--tertiary)}
+.feature-table .priority.medium{background:rgba(255,189,46,.15);color:var(--warning)}
+.feature-table .priority.later{background:rgba(110,118,129,.15);color:var(--text-3)}
+
+/* TIMELINE */
+.timeline{list-style:none;margin:1.5rem 0;padding:0;border-left:2px solid var(--border)}
+.timeline li{position:relative;padding:0 0 1.5rem 1.5rem}
+.timeline li::before{content:"";position:absolute;left:-7px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--primary);box-shadow:0 0 8px rgba(0,255,65,.5)}
+.timeline .date{font-family:var(--mono);color:var(--primary);font-weight:700;font-size:.85rem}
+.timeline p{color:var(--text-2);font-size:.9rem;margin:.3rem 0 0}
+
+/* ARCHITECTURE */
+.arch-diagram{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2rem;font-family:var(--mono);font-size:.85rem;line-height:1.8}
+.arch-diagram .layer{border:1px solid var(--primary-mid);border-radius:var(--radius);padding:1rem;margin-bottom:.75rem;background:rgba(0,255,65,.03)}
+.arch-diagram .layer-title{color:var(--primary);font-weight:700;margin-bottom:.5rem;font-size:.9rem}
+.arch-diagram .layer-title::before{content:"┌─ ";color:var(--text-3)}
+.arch-diagram .layer-title::after{content:" ─┐";color:var(--text-3)}
+.arch-diagram .module{display:inline-block;padding:.2rem .5rem;background:var(--bg-elev);border:1px solid var(--border);border-radius:4px;margin:.2rem;font-size:.75rem}
+
+/* CODE BLOCK */
+.code-block{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin:1rem 0}
+.code-header{display:flex;align-items:center;gap:6px;padding:.6rem 1rem;background:var(--bg-elev);border-bottom:1px solid var(--border);font-size:.72rem;color:var(--text-3);letter-spacing:.08em;font-family:var(--mono)}
+.code-header .dot{width:10px;height:10px;border-radius:50%}
+.code-header .dot.r{background:var(--error)}.code-header .dot.y{background:var(--warning)}.code-header .dot.g{background:var(--primary)}
+.code-header .path{margin-left:auto}
+.code-block pre{padding:1rem;margin:0;border:none;background:transparent}
+
+/* CHECKLIST */
+.checklist{list-style:none;padding:0}
+.checklist li{padding:.6rem 0 .6rem 2rem;position:relative;color:var(--text-2);font-size:.9rem;border-bottom:1px solid var(--border-2)}
+.checklist li::before{content:"☐";position:absolute;left:0;color:var(--primary);font-weight:700}
+.checklist li.done::before{content:"✓"}
+.checklist li.done{color:var(--text)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(1,4,9,.92);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:1.5rem;z-index:200}
+.modal-overlay.active{display:flex}
+.modal{background:var(--bg-card);border:1px solid var(--primary-mid);border-radius:var(--radius-lg);padding:1.5rem;width:100%;max-width:400px;box-shadow:var(--glow);animation:modalIn .3s}
+@keyframes modalIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.modal h3{font-family:var(--mono);font-size:1.1rem;color:var(--primary);margin-bottom:.6rem}
+.modal p{font-size:.9rem;color:var(--text-2);line-height:1.6;margin-bottom:1rem}
+.modal .code{font-family:var(--mono);font-size:.75rem;background:var(--bg-code);border:1px solid var(--border);border-radius:var(--radius);padding:.6rem;color:var(--accent);word-break:break-all;margin-bottom:1rem}
+.modal .actions{display:flex;gap:.5rem}
+.modal .actions button{flex:1;padding:.6rem;font-size:.8rem}
+
+/* TOAST */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--bg-card);border:1px solid var(--primary-mid);border-radius:var(--radius);padding:.6rem 1rem;font-family:var(--mono);font-size:.8rem;color:var(--primary);box-shadow:var(--glow);display:none;z-index:300;animation:toastIn .3s}
+.toast.active{display:block}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* FOOTER */
+.footer{border-top:1px solid var(--border);background:var(--bg-2);padding:3rem 0 1.5rem;margin-top:4rem}
+.footer-grid{display:grid;gap:2rem;grid-template-columns:1fr;padding-bottom:2rem}
+@media(min-width:768px){.footer-grid{grid-template-columns:2fr 1fr 1fr 1fr}}
+.footer-brand p{color:var(--text-2);font-size:.85rem;max-width:34ch;margin-top:.6rem}
+.footer h4{font-family:var(--mono);font-size:.82rem;color:var(--text);margin-bottom:.8rem}
+.footer ul{list-style:none}
+.footer li{margin-bottom:.4rem}
+.footer a{font-family:var(--mono);font-size:.8rem;color:var(--text-2);text-decoration:none}
+.footer a:hover{color:var(--primary)}
+.footer-bottom{display:flex;flex-wrap:wrap;gap:.75rem;justify-content:space-between;align-items:center;padding-top:1rem;border-top:1px solid var(--border);font-family:var(--mono);font-size:.72rem;color:var(--text-3)}
+
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .6s,transform .6s}
+.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .section{padding:3rem 0}
+  .hero{padding:2rem 0 3rem}
+  .hero-inner{padding:1.5rem}
+  .decision-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<canvas id="matrix-canvas" aria-hidden="true"></canvas>
+
+<header class="nav">
+  <div class="container nav-inner">
+    <a class="brand" href="#home">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="8" fill="none" stroke="currentColor" stroke-width="5"/><path d="M16 21 L28 32 L16 43" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><rect x="32" y="39" width="18" height="6" rx="3" fill="currentColor"/></svg>
+      <span>Clearance</span>
+    </a>
+    <nav aria-label="Primary">
+      <ul class="nav-links">
+        <li><a href="#home" class="active">Home</a></li>
+        <li><a href="#demo">Demo</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#build">Build Plan</a></li>
+        <li><a href="#submission">Submission</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="container">
+    <div class="hero-banner">
+      <canvas id="matrix-canvas" aria-hidden="true"></canvas>
+      <div class="hero-inner">
+        <div>
+          <div class="hero-badge">CLOCK IN Hackathon · Oct 8, 2026</div>
+          <h1>The phone you open <span class="accent">before</span> you sign.</h1>
+          <p class="hero-lede">Clearance is the pre-sign review card and post-sign verifiable receipt for Solana Mobile. It tells you, in plain language, what a signature will do — and seals the proof with a real SKR transfer. Not a wallet. Not an interceptor. Just truth.</p>
+          <div class="hero-stats">
+            <div class="hero-stat"><strong>48h</strong> Cooldown Clock</div>
+            <div class="hero-stat"><strong>90-day</strong> Claim Window</div>
+            <div class="hero-stat"><strong>0.015 SOL</strong> Fee Floor</div>
+            <div class="hero-stat"><strong>MWA</strong> Seed Vault</div>
+          </div>
+          <div class="hero-cta">
+            <a class="btn btn-primary" href="#demo">Open Live Demo <span class="arrow">→</span></a>
+            <a class="btn btn-ghost" href="#features">View 50 Features</a>
+          </div>
+        </div>
+        <div>
+          <div class="terminal" aria-label="Terminal demo">
+            <div class="code-header">
+              <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+              <span class="path">febin@clearance:~</span>
+            </div>
+            <div style="padding:1rem;font-family:var(--mono);font-size:.82rem;line-height:1.7">
+              <div style="margin-bottom:.3rem"><span style="color:var(--primary)">$</span> whoami</div>
+              <div style="color:var(--text-2);margin-bottom:.5rem">clearance — tx reviewer · seeker</div>
+              <div style="margin-bottom:.3rem"><span style="color:var(--primary)">$</span> mwa connect</div>
+              <div style="color:var(--text-2);margin-bottom:.5rem">seed vault · solana:mainnet</div>
+              <div style="margin-bottom:.3rem"><span style="color:var(--primary)">$</span> decode --tx stake.air</div>
+              <div style="color:var(--text-2);margin-bottom:.3rem">unstake 1,000 SKR · 48h cooldown</div>
+              <div style="color:var(--accent);margin-bottom:.5rem">rewards stop: epoch 412</div>
+              <div style="margin-bottom:.3rem"><span style="color:var(--primary)">$</span> review --bind</div>
+              <div style="color:var(--text-2);margin-bottom:.3rem">message hash: a3f2c1...</div>
+              <div style="margin-bottom:.3rem"><span style="color:var(--primary)">$</span> seal --skr</div>
+              <div style="color:var(--accent)">receipt verified ✓</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="section" id="problem">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">The Problem</div>
+      <h2 class="section-title">Why Clearance exists</h2>
+    </div>
+    <div class="grid cols-2">
+      <div class="card reveal">
+        <h3 style="color:var(--danger)">The Oct 1 Incident</h3>
+        <p>A Seeker user reported SKR was unstaked and gone after using a dApp Store app. The replies were "recovery accounts" — scammers. Users sign stake-program instructions they cannot read, then get hunted.</p>
+        <p style="margin-top:1rem;font-family:var(--mono);font-size:.8rem;color:var(--text-3)">Source: Public Seeker community reports, Oct 1 2026</p>
+      </div>
+      <div class="card reveal">
+        <h3 style="color:var(--primary)">The Clearance Solution</h3>
+        <p>Clearance is <strong>not</strong> a wallet. It does <strong>not</strong> sit between the user and Seed Vault (MWA doesn't allow a third-party firewall). Clearance is the <strong>pre-sign review card</strong> and the <strong>post-sign verifiable receipt</strong>.</p>
+        <p style="margin-top:1rem;font-family:var(--mono);font-size:.8rem;color:var(--text-3)">Architecture: Honest about MWA limitations</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO -->
+<section class="section phone-section" id="demo">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Live Demo</div>
+      <h2 class="section-title">The Clearance App</h2>
+      <p class="section-lede">Four screens. One mental model: <em>this phone tells me the truth about my money.</em> Try the full flow — connect, scan, review, sign, settle.</p>
+    </div>
+    <div class="phone-grid">
+      <div class="reveal">
+        <h3 style="font-family:var(--mono);font-size:1.1rem;color:var(--primary);margin-bottom:1rem">Demo Flow (3 minutes)</h3>
+        <ol style="list-style:none;padding:0;font-family:var(--mono);font-size:.9rem;color:var(--text-2)">
+          <li style="padding:.6rem 0;border-bottom:1px solid var(--border)"><span style="color:var(--primary);font-weight:700">01.</span> Scan Task QR</li>
+          <li style="padding:.6rem 0;border-bottom:1px solid var(--border)"><span style="color:var(--primary);font-weight:700">02.</span> Capture Evidence (photo + SHA-256)</li>
+          <li style="padding:.6rem 0;border-bottom:1px solid var(--border)"><span style="color:var(--primary);font-weight:700">03.</span> Review Clearance Card</li>
+          <li style="padding:.6rem 0;border-bottom:1px solid var(--border)"><span style="color:var(--primary);font-weight:700">04.</span> Reject Invalid OR Authorize Valid</li>
+          <li style="padding:.6rem 0;border-bottom:1px solid var(--border)"><span style="color:var(--primary);font-weight:700">05.</span> Inspect Settlement (confirmed)</li>
+          <li style="padding:.6rem 0"><span style="color:var(--primary);font-weight:700">06.</span> Export Verifiable Receipt</li>
+        </ol>
+        <div style="margin-top:1.5rem;padding:1rem;background:var(--bg-card);border:1px solid var(--primary-mid);border-radius:var(--radius-lg)">
+          <div style="font-family:var(--mono);font-size:.8rem;color:var(--primary);margin-bottom:.5rem">🏆 Why This Wins</div>
+          <ul style="list-style:none;padding:0;font-size:.85rem;color:var(--text-2)">
+            <li style="padding:.3rem 0">✓ <strong>Stickiness:</strong> Home shows open 48h cooldowns — users MUST return</li>
+            <li style="padding:.3rem 0">✓ <strong>Real Pain:</strong> Prevents the exact "blind approve → drain" pattern</li>
+            <li style="padding:.3rem 0">✓ <strong>Innovation:</strong> SKR seals cryptographic receipts (not screenshots)</li>
+            <li style="padding:.3rem 0">✓ <strong>Demo-Ready:</strong> 3-min flow from scan to receipt</li>
+          </ul>
+        </div>
+      </div>
+      <div class="phone-frame reveal">
+        <div class="phone-screen">
+          <div class="phone-header">
+            <div class="brand">
+              <svg viewBox="0 0 64 64" aria-hidden="true" style="width:20px;height:20px"><rect x="2" y="2" width="60" height="60" rx="8" fill="none" stroke="currentColor" stroke-width="5"/><path d="M16 21 L28 32 L16 43" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><rect x="32" y="39" width="18" height="6" rx="3" fill="currentColor"/></svg>
+              <span>Clearance</span>
+            </div>
+            <div class="status"><span class="dot"></span>devnet</div>
+          </div>
+          <div class="phone-tabs">
+            <button class="phone-tab active" data-screen="now">🏠 Now</button>
+            <button class="phone-tab" data-screen="clear">🔍 Clear</button>
+            <button class="phone-tab" data-screen="proof">📜 Proof</button>
+          </div>
+          <div class="phone-content">
+            <!-- NOW SCREEN -->
+            <div class="screen active" id="screen-now">
+              <div class="wallet-card">
+                <div class="label">Connected Wallet</div>
+                <div class="address">7xK2...9mQp · Seed Vault</div>
+                <div class="balance">2.4180 <span style="font-size:.8rem;color:var(--text-2)">SOL</span></div>
+                <div class="balance-sub">≈ $387.22 USD</div>
+              </div>
+              <h4 style="font-family:var(--mono);font-size:.75rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.1em;margin:1rem 0 .6rem">Balances</h4>
+              <div class="token-row">
+                <div class="left">
+                  <div class="icon sol">◎</div>
+                  <div><div class="name">Solana</div><div class="ticker">SOL</div></div>
+                </div>
+                <div><div class="amount">2.4180</div><div class="usd">$387.22</div></div>
+              </div>
+              <div class="token-row">
+                <div class="left">
+                  <div class="icon skr">S</div>
+                  <div><div class="name">SKR Token</div><div class="ticker">SKR · Official Mint</div></div>
+                </div>
+                <div><div class="amount">12,450.00</div><div class="usd">$124.50</div></div>
+              </div>
+              <div class="token-row" style="opacity:.5">
+                <div class="left">
+                  <div class="icon warn">⚠</div>
+                  <div><div class="name">FakeSKR</div><div class="ticker">Spam · Hidden</div></div>
+                </div>
+                <div><div class="amount">999,999</div><div class="usd">$0.00</div></div>
+              </div>
+              <h4 style="font-family:var(--mono);font-size:.75rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.1em;margin:1rem 0 .6rem">Open Cooldown</h4>
+              <div class="cooldown-card">
+                <div class="top">
+                  <div class="label">Unstake in progress</div>
+                  <div class="badge">COOLDOWN</div>
+                </div>
+                <div class="timer" id="cooldown-timer">31:42:18</div>
+                <div class="sub">1,000 SKR · Withdraw available Oct 7, 14:23 IST</div>
+                <div class="progress"><div class="progress-fill" id="cooldown-progress" style="width:34%"></div></div>
+              </div>
+              <h4 style="font-family:var(--mono);font-size:.75rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.1em;margin:1rem 0 .6rem">Claim Deadlines</h4>
+              <div class="claim-card">
+                <div class="top">
+                  <div class="season">Seeker Season 3</div>
+                  <div class="status claimable">Claimable Now</div>
+                </div>
+                <div class="meta">847 SKR · 12 days remaining</div>
+                <div class="amount">≈ $8.47 USD</div>
+                <div class="warning">⚠ Requires ≥0.015 SOL for fees. You have 2.4180 SOL.</div>
+              </div>
+              <div class="claim-card">
+                <div class="top">
+                  <div class="season">Seeker Season 2</div>
+                  <div class="status claimed">Claimed</div>
+                </div>
+                <div class="meta">1,200 SKR · Claimed Oct 1</div>
+                <div class="amount">≈ $12.00 USD</div>
+              </div>
+            </div>
+
+            <!-- CLEAR SCREEN -->
+            <div class="screen" id="screen-clear">
+              <div class="clearance-card">
+                <div class="clearance-header">
+                  <span class="tag">Clearance Request</span>
+                  <span class="status" id="action-status">DRAFT</span>
+                </div>
+                <div class="clearance-body">
+                  <div class="clearance-row">
+                    <div><div class="k">Task ID</div><div class="v hash" id="clear-task-id">task_7f3a91c4</div></div>
+                    <div style="text-align:right"><div class="k">Network</div><div class="v">mainnet</div></div>
+                  </div>
+                  <div class="clearance-row">
+                    <div><div class="k">Recipient</div><div class="v hash" id="clear-recipient">DpR8...k2Mx</div></div>
+                  </div>
+                  <div class="clearance-row">
+                    <div><div class="k">Amount</div><div class="v amount" id="clear-amount">1,000 SKR</div></div>
+                    <div style="text-align:right"><div class="k">Decimals</div><div class="v">6</div></div>
+                  </div>
+                </div>
+              </div>
+              <h4 style="font-family:var(--mono);font-size:.75rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.1em;margin:1rem 0 .6rem">Decoded Instruction</h4>
+              <div class="instruction-card">
+                <div class="kind">TransferChecked (Token Program)</div>
+                <div class="detail">
+                  <div class="kv"><span class="k">Program</span><span class="v">TokenkegQ...DA</span></div>
+                  <div class="kv"><span class="k">Mint</span><span class="v">SKR...Mint ✓ Official</span></div>
+                  <div class="kv"><span class="k">Source</span><span class="v">7xK2...9mQp (you)</span></div>
+                  <div class="kv"><span class="k">Dest</span><span class="v">DpR8...k2Mx</span></div>
+                  <div class="kv"><span class="k">Authority</span><span class="v">7xK2...9mQp (you)</span></div>
+                  <div class="kv"><span class="k">Raw Amount</span><span class="v">1,000,000,000</span></div>
+                  <div class="kv"><span class="k">Fee (SOL)</span><span class="v">0.000005 SOL</span></div>
+                </div>
+              </div>
+              <div class="info-card">
+                <div class="title">ℹ Plain-Language Summary</div>
+                <div class="body">You are sending exactly 1,000 SKR to DpR8...k2Mx. The mint is the official SKR token. Your wallet will pay a 0.000005 SOL network fee. This transaction cannot be reversed once signed.</div>
+              </div>
+              <div class="warning-card" id="unstake-warning" style="display:none">
+                <div class="title">⚠ Rewards Stop Immediately</div>
+                <div class="body">Unstaking forfeits rewards from the current epoch. Your 48-hour cooldown begins now. You cannot withdraw until Oct 7, 14:23 IST.</div>
+              </div>
+              <h4 style="font-family:var(--mono);font-size:.75rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.1em;margin:1rem 0 .6rem">Review Binding</h4>
+              <div class="instruction-card" style="border-left-color:var(--tertiary)">
+                <div class="kind" style="color:var(--tertiary)">Message Hash (SHA-256)</div>
+                <div class="detail">
+                  <div class="kv"><span class="k">Hash</span><span class="v hash" id="msg-hash">awaiting review...</span></div>
+                  <div class="kv"><span class="k">Reviewed</span><span class="v" id="review-time">—</span></div>
+                  <div class="kv"><span class="k">Re-check</span><span class="v" style="color:var(--primary)">before sign ✓</span></div>
+                </div>
+              </div>
+              <div class="decision-row">
+                <button class="btn btn-danger" onclick="rejectAction()">Reject</button>
+                <button class="btn btn-primary" onclick="authorizeAction()">Authorize</button>
+              </div>
+            </div>
+
+            <!-- PROOF SCREEN -->
+            <div class="screen" id="screen-proof">
+              <h4 style="font-family:var(--mono);font-size:.75rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.1em;margin:0 0 .8rem">Receipts</h4>
+              <div id="receipts-list">
+                <div class="receipt-card">
+                  <div class="top">
+                    <span class="id">task_7f3a91</span>
+                    <span class="badge confirmed">CONFIRMED</span>
+                  </div>
+                  <div class="row"><span class="k">Amount</span><span class="v">1,000 SKR</span></div>
+                  <div class="row"><span class="k">Recipient</span><span class="v">DpR8...k2Mx</span></div>
+                  <div class="row"><span class="k">Evidence</span><span class="v" style="font-size:.65rem">a3f2c1d8...</span></div>
+                  <div class="row"><span class="k">Settled</span><span class="v">2 min ago</span></div>
+                  <div class="sig">5Kx9...mPq2 · 32 confirmations · finalized</div>
+                </div>
+                <div class="receipt-card" style="opacity:.6">
+                  <div class="top">
+                    <span class="id">task_2b8c44</span>
+                    <span class="badge rejected">REJECTED</span>
+                  </div>
+                  <div class="row"><span class="k">Amount</span><span class="v">5,000 SKR</span></div>
+                  <div class="row"><span class="k">Reason</span><span class="v">Invalid instruction · unknown program</span></div>
+                </div>
+              </div>
+              <button class="btn btn-ghost" onclick="showToast('Receipts exported to /evidence/')" style="width:100%;margin-top:.5rem;font-size:.8rem">
+                📤 Export All Receipts
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">50-Feature Painkiller Matrix</div>
+      <h2 class="section-title">Every feature, organized by build phase</h2>
+      <p class="section-lede">Ship only what wins. The first 8 features are the MVP. The next 20 make it indispensable. The final 22 are the roadmap.</p>
+    </div>
+    <div class="tabs" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem">
+      <button class="btn btn-primary" data-tab="ship" onclick="showTab('ship')"> Ship Set (8)</button>
+      <button class="btn btn-muted" data-tab="day30" onclick="showTab('day30')">️ Day 30 (21)</button>
+      <button class="btn btn-muted" data-tab="roadmap" onclick="showTab('roadmap')">🗺️ Roadmap (21)</button>
+    </div>
+    <div id="tab-ship" class="tab-content">
+      <table class="feature-table">
+        <thead><tr><th>#</th><th>Feature</th><th>Pain It Kills</th><th>Priority</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td>MWA Connect + Balance Display</td><td>"Which account am I even on?"</td><td><span class="priority critical">Critical</span></td></tr>
+          <tr><td class="num">2</td><td>Clearance Card Pre-Sign</td><td>Blind approve</td><td><span class="priority critical">Critical</span></td></tr>
+          <tr><td class="num">3</td><td>SKR Stake/Unstake Decoder</td><td>Stake instructions look like noise</td><td><span class="priority critical">Critical</span></td></tr>
+          <tr><td class="num">4</td><td>"Rewards Stop Immediately" Warning</td><td>People unstake thinking yield continues</td><td><span class="priority critical">Critical</span></td></tr>
+          <tr><td class="num">5</td><td>48-Hour Cooldown Clock</td><td>"Where is my SKR?" after unstake</td><td><span class="priority critical">Critical</span></td></tr>
+          <tr><td class="num">6</td><td>Reject Without Second Prompt</td><td>Panic-approve</td><td><span class="priority critical">Critical</span></td></tr>
+          <tr><td class="num">7</td><td>Memo Receipt Sealed by SKR Transfer</td><td>Screenshot is not proof</td><td><span class="priority critical">Critical</span></td></tr>
+          <tr><td class="num">8</td><td>Official-Mint Check</td><td>Fake SKR in the same wallet</td><td><span class="priority high">High</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="tab-day30" class="tab-content" style="display:none">
+      <table class="feature-table">
+        <thead><tr><th>#</th><th>Feature</th><th>Pain It Kills</th><th>Priority</th></tr></thead>
+        <tbody>
+          <tr><td class="num">9</td><td>Signature History with Decoder</td><td>You only notice a drain the next morning</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">10</td><td>Unknown-Program Flag</td><td>New drainer program, first time you see it</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">11</td><td>Guardian Name Display</td><td>Stake portal hides who you picked</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">12</td><td>APY Next to Cooldown</td><td>"22% headline, no mention of the 2-day wait"</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">13</td><td>Inflation Note (10% now, −25%/yr)</td><td>Yield feels permanent</td><td><span class="priority medium">Medium</span></td></tr>
+          <tr><td class="num">14</td><td>"Only Unlocked SKR Can Be Staked" Gate</td><td>Stake button fails with no reason</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">15</td><td>Partial Unstake Default</td><td>Fat-finger full exit</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">16</td><td>Unstake Preview (Rewards Forfeited)</td><td>Users unstake 100% by accident</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">17</td><td>Cooldown Done → One Withdraw Button</td><td>Tokens sit in limbo after 48h</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">18</td><td>Combined Tx Alert (Unstake + Send)</td><td>The 1 Oct drain pattern</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">19</td><td>Authority Change Red Flag</td><td>"SetAuthority" hidden in a "claim"</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">20</td><td>Token-Account Close/Burn Alert</td><td>"Dust cleanup" that burns the position</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">21</td><td>New Account Created Alert</td><td>Hidden recipient</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">22</td><td>SOL Leave-Behind Calculator</td><td>Drained to zero lamports, account dies</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">23</td><td>Unlimited Delegation Warning</td><td>One signature, repeated pulls</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">24</td><td>dApp Identity on Card</td><td>Sheet says "App"</td><td><span class="priority medium">Medium</span></td></tr>
+          <tr><td class="num">25</td><td>First-Time Program Badge</td><td>Trust on sight</td><td><span class="priority medium">Medium</span></td></tr>
+          <tr><td class="num">26</td><td>Allow-List of Known Programs</td><td>Everything unknown looks the same</td><td><span class="priority medium">Medium</span></td></tr>
+          <tr><td class="num">27</td><td>No "Recovery Service" Upsell, ever</td><td>The reply guys after a drain</td><td><span class="priority medium">Medium</span></td></tr>
+          <tr><td class="num">28</td><td>"This Cannot Be Reversed" Line</td><td>Users think unstake is an undo</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">29</td><td>Claim Calendar for Seasons</td><td>Claims hide in Activity tab and expire</td><td><span class="priority medium">Medium</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="tab-roadmap" class="tab-content" style="display:none">
+      <table class="feature-table">
+        <thead><tr><th>#</th><th>Feature</th><th>Pain It Kills</th><th>Priority</th></tr></thead>
+        <tbody>
+          <tr><td class="num">30</td><td>Claimable/Claimed/Missed Status</td><td>People open the app a week late</td><td><span class="priority medium">Medium</span></td></tr>
+          <tr><td class="num">31</td><td>Badge-to-Allocation Estimate</td><td>They don't know if the quest paid</td><td><span class="priority medium">Medium</span></td></tr>
+          <tr><td class="num">32</td><td>Claim Tx Decoder</td><td>Fake claim sites</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">33</td><td>Stake-on-Claim is Opt-In</td><td>Half of round-1 claims staked without choice</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">34</td><td>Separate "Move SKR" from "Stake SKR"</td><td>One button does both</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">35</td><td>Genesis/Seeker-Device Check Explained</td><td>"Am I even eligible?"</td><td><span class="priority medium">Medium</span></td></tr>
+          <tr><td class="num">36</td><td>Reminder Day Cooldown Ends</td><td>They forget the withdraw</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">37</td><td>Fee in SOL Shown Before Sign</td><td>Surprise fee on empty SOL balance</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">38</td><td>Failed-Simulation Reason in Words</td><td>"Transaction failed"</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">39</td><td>Spam Token Hide / SKR Pinned</td><td>Wallet looks drained when it's airdrop junk</td><td><span class="priority medium">Medium</span></td></tr>
+          <tr><td class="num">40</td><td>Decimals Check (1 SKR ≠ 1 Base Unit)</td><td>Amount off by 1e9</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">41</td><td>Cluster Lock (Mainnet Only)</td><td>Devnet demo signed against real funds</td><td><span class="priority medium">Medium</span></td></tr>
+          <tr><td class="num">42</td><td>Blockhash Expired → Rebuild</td><td>Second approve of a dead tx</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">43</td><td>Home = Open Cooldowns</td><td>Reason to reopen tomorrow</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">44</td><td>Last Clearance on Home Card</td><td>"What did I just do?"</td><td><span class="priority high">High</span></td></tr>
+          <tr><td class="num">45</td><td>One Number: Liquid vs Staked vs Cooling</td><td>Three balances, one coin</td><td><span class="priority medium">Medium</span></td></tr>
+          <tr><td class="num">46</td><td>Guardian Yield Compared (Post-Safe)</td><td>APY shopping during a drain</td><td><span class="priority medium">Medium</span></td></tr>
+          <tr><td class="num">47</td><td>Export Clearance (Sig + Slot + Text)</td><td>They need to show someone what happened</td><td><span class="priority medium">Medium</span></td></tr>
+          <tr><td class="num">48</td><td>Split Stake Across Guardians</td><td>One blob balance</td><td><span class="priority later">Later</span></td></tr>
+          <tr><td class="num">49</td><td>Proof-of-Work Evidence (Camera + Hash)</td><td>Fake task reports</td><td><span class="priority later">Later</span></td></tr>
+          <tr><td class="num">50</td><td>SKR Integration Prize Use Case</td><td>Creative SKR use: Receipt Sealing</td><td><span class="priority later">Later</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section class="section" id="architecture" style="background:var(--bg-2)">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Architecture</div>
+      <h2 class="section-title">Tech Stack & Module Specs</h2>
+      <p class="section-lede">Expo (React Native) for UI. Kotlin native modules for security. MWA for wallet integration. Helius for transaction parsing.</p>
+    </div>
+    <div class="arch-diagram reveal">
+      <div class="layer">
+        <div class="layer-title">UI Layer — Expo React Native</div>
+        <div><span class="module">NowScreen.tsx</span><span class="module">ClearScreen.tsx</span><span class="module">ProofScreen.tsx</span><span class="module">App.tsx</span></div>
+      </div>
+      <div class="layer">
+        <div class="layer-title">Services Layer</div>
+        <div><span class="module">mwa.ts</span><span class="module">solana.ts</span><span class="module">evidence.ts</span><span class="module">reviewBinding.ts</span><span class="module">settlement.ts</span></div>
+      </div>
+      <div class="layer">
+        <div class="layer-title">Models Layer</div>
+        <div><span class="module">Action.ts</span><span class="module">Evidence.ts</span><span class="module">Receipt.ts</span></div>
+      </div>
+      <div class="layer">
+        <div class="layer-title">Native Layer — Kotlin</div>
+        <div><span class="module">KeystoreService.kt</span><span class="module">CameraService.kt</span><span class="module">SHA256Service.kt</span></div>
+      </div>
+    </div>
+    <div class="grid cols-2" style="margin-top:2rem">
+      <div class="card reveal">
+        <h3>Action Record</h3>
+        <pre>interface Action {
+  id: string;          // UUID
+  taskId: string;
+  recipient: string;
+  mint: string;        // SKR mint address
+  rawAmount: string;   // "1000000000"
+  decimals: number;
+  network: 'devnet' | 'mainnet-beta';
+  status: ActionStatus;
+}</pre>
+      </div>
+      <div class="card reveal">
+        <h3>Evidence Record</h3>
+        <pre>interface Evidence {
+  actionId: string;
+  photoPath: string;
+  photoSha256: string;
+  note: string;
+  capturedAt: number;
+  manifestSha256: string;
+}</pre>
+      </div>
+      <div class="card reveal">
+        <h3>Receipt Record</h3>
+        <pre>interface Receipt {
+  actionId: string;
+  evidenceDigest: string;
+  transactionSignature: string;
+  settlementStatus: SettlementStatus;
+  observedAt: number;
+}</pre>
+      </div>
+      <div class="card reveal">
+        <h3>MWA Integration</h3>
+        <pre>const auth = await wallet.authorize({
+  chain: 'solana:devnet',
+  identity: {
+    name: 'Clearance',
+    uri: 'https://codesbyfebin.dev'
+  },
+});</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BUILD PLAN -->
+<section class="section" id="build">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Build Plan</div>
+      <h2 class="section-title">72-Hour Ship Schedule</h2>
+      <p class="section-lede">Deadline: Oct 8, 2026, 11:59pm PT. Deliverables: APK, GitHub repo, 3-min demo video, pitch deck.</p>
+    </div>
+    <ul class="timeline">
+      <li><div class="date">Tonight (Oct 5)</div><p>Custom Expo dev build. MWA connect → address → balances on physical device. <strong>Hard gate:</strong> nothing else until this signs.</p></li>
+      <li><div class="date">Oct 6</div><p>Decoder v1: program ID + instruction type → plain-language string. Stake/unstake decode, 48h cooldown math, reject path.</p></li>
+      <li><div class="date">Oct 7</div><p>Claim-deadline card and spam-token filter. Release APK, install, record the 3-minute take: connect → stage unstake → read warning → reject → seal receipt with SKR transfer → show signature on explorer.</p></li>
+      <li><div class="date">Oct 8</div><p>Write the deck while video encodes. Submit once before 11:59pm. <strong>No early submission; finals aren't editable.</strong></p></li>
+    </ul>
+  </div>
+</section>
+
+<!-- SUBMISSION -->
+<section class="section" id="submission" style="background:var(--bg-2)">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Submission Checklist</div>
+      <h2 class="section-title">Before October 8, 11:59pm PT</h2>
+    </div>
+    <ul class="checklist" id="checklist">
+      <li>APK installs and runs on a physical Android device or emulator</li>
+      <li>MWA connects to Seed Vault or Phantom</li>
+      <li>SOL and demo-token balances display correctly</li>
+      <li>QR validation rejects malformed requests</li>
+      <li>Evidence capture saves the photo and computes its SHA-256</li>
+      <li>Clearance card displays exact recipient, amount, and decoded instructions</li>
+      <li>Review binding fails if the transaction message changes</li>
+      <li>Wallet signing completes and settlement is observed as "confirmed"</li>
+      <li>Receipt export includes evidence digest, transaction signature, and settlement status</li>
+      <li>Demo video is 3 minutes or less, showing the complete workflow</li>
+      <li>GitHub repo has a clean commit history and technical README</li>
+      <li>Pitch deck has 10 slides as specified</li>
+    </ul>
+    <div style="margin-top:2rem;padding:1.5rem;background:var(--bg-card);border:1px solid var(--primary-mid);border-radius:var(--radius-lg)">
+      <h3 style="font-family:var(--mono);font-size:1rem;color:var(--primary);margin-bottom:.8rem">🎓 Career Positioning</h3>
+      <p style="color:var(--text-2);font-size:.95rem;line-height:1.7;margin-bottom:1rem">The strongest portfolio statement is: <strong style="color:var(--text)">"Built an Android application that binds readable transaction review to wallet authorization and produces independently inspectable settlement receipts."</strong></p>
+      <p style="color:var(--text-2);font-size:.9rem">This demonstrates Android application development, applied cryptography (SHA-256, Keystore), Solana blockchain integration, user experience design, and security best practices. Target role: Android System Engineer (Solana Mobile) at $138k–$159k remote.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section" id="contact">
+  <div class="container">
+    <div style="border:1px solid var(--primary-mid);border-radius:var(--radius-lg);padding:2.5rem;background:linear-gradient(100deg,rgba(0,255,65,.06),transparent 60%),var(--bg-card);position:relative;overflow:hidden">
+      <div style="position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(0,255,65,.12),transparent 50%);pointer-events:none"></div>
+      <div style="position:relative">
+        <div class="eyebrow" style="font-family:var(--mono);font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;color:var(--secondary);margin-bottom:.5rem">// Get In Touch</div>
+        <h2 class="section-title">Let's build something together</h2>
+        <p style="color:var(--text-2);margin-bottom:1.5rem;max-width:60ch">Open to interesting projects, collaboration, and a conversation that can end in a repository. If you're working on verifiable compute, sovereign infrastructure, or open AI tooling — let's talk.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:1.5rem">
+          <a class="btn btn-primary" href="mailto:codesbyfebin@gmail.com">Start a Conversation <span class="arrow">→</span></a>
+          <a class="btn btn-ghost" href="https://github.com/CodesbyFebin" target="_blank" rel="noopener">View Source</a>
+        </div>
+        <ul style="list-style:none;padding:0;font-family:var(--mono);font-size:.85rem;color:var(--text-2)">
+          <li style="padding:.3rem 0"> <a href="mailto:codesbyfebin@gmail.com">codesbyfebin@gmail.com</a></li>
+          <li style="padding:.3rem 0">📍 Kerala, India · IST (UTC+5:30)</li>
+          <li style="padding:.3rem 0">gh <a href="https://github.com/CodesbyFebin" target="_blank" rel="noopener">github.com/CodesbyFebin</a></li>
+          <li style="padding:.3rem 0">in <a href="https://linkedin.com/in/codes-by-febin/" target="_blank" rel="noopener">linkedin.com/in/codes-by-febin</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="#home">
+          <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="8" fill="none" stroke="currentColor" stroke-width="5"/><path d="M16 21 L28 32 L16 43" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><rect x="32" y="39" width="18" height="6" rx="3" fill="currentColor"/></svg>
+          <span>Clearance</span>
+        </a>
+        <p>Know what you approve. Prove what happened. Built for the CLOCK IN Solana Mobile Hackathon · Oct 8, 2026.</p>
+      </div>
+      <div>
+        <h4>App</h4>
+        <ul>
+          <li><a href="#demo">Live Demo</a></li>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#architecture">Architecture</a></li>
+          <li><a href="#build">Build Plan</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="https://solanamobile.com/hackathon" target="_blank" rel="noopener">CLOCK IN</a></li>
+          <li><a href="https://github.com/solana-mobile/mobile-wallet-adapter" target="_blank" rel="noopener">MWA Docs</a></li>
+          <li><a href="https://github.com/CodesbyFebin" target="_blank" rel="noopener">GitHub</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Connect</h4>
+        <ul>
+          <li><a href="mailto:codesbyfebin@gmail.com">Email</a></li>
+          <li><a href="https://github.com/CodesbyFebin" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="https://linkedin.com/in/codes-by-febin/" target="_blank" rel="noopener">LinkedIn</a></li>
+          <li><a href="https://orcid.org/0009-0002-8123-1531" target="_blank" rel="noopener">ORCID</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year">2026</span> CodesbyFebin (Febin Francis). All rights reserved.</span>
+      <span>CLOCK IN · Solana Mobile Hackathon · Deadline Oct 8, 2026 11:59pm PT</span>
+    </div>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3 id="modal-title">Title</h3>
+    <p id="modal-text">Text</p>
+    <div class="code" id="modal-code"></div>
+    <div class="actions" id="modal-actions"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ STATE ============
+const state = {
+  screen: 'now',
+  action: null,
+  evidence: null,
+  review: null,
+  receipts: [
+    {id:'task_7f3a91',amount:'1,000 SKR',recipient:'DpR8...k2Mx',evidence:'a3f2c1d8...',sig:'5Kx9...mPq2 · 32 confirmations',status:'confirmed'},
+    {id:'task_2b8c44',amount:'5,000 SKR',recipient:'Xm4k...p9Qr',evidence:'—',sig:'rejected: invalid instruction',status:'rejected'}
+  ],
+  cooldownEnd: Date.now() + 31*3600*1000 + 42*60*1000 + 18*1000
+};
+
+// ============ NAVIGATION ============
+function switchScreen(name){
+  state.screen=name;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const target=document.getElementById('screen-'+name);
+  if(target)target.classList.add('active');
+  document.querySelectorAll('.phone-tab').forEach(b=>{
+    b.classList.toggle('active',b.dataset.screen===name);
+  });
+  document.querySelectorAll('.nav-links a').forEach(a=>{
+    a.classList.toggle('active',a.getAttribute('href')==='#'+name);
+  });
+}
+document.querySelectorAll('.phone-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>switchScreen(tab.dataset.screen));
+});
+
+// ============ TABS ============
+function showTab(name){
+  document.querySelectorAll('.tab-content').forEach(t=>t.style.display='none');
+  document.getElementById('tab-'+name).style.display='block';
+  document.querySelectorAll('.tabs .btn').forEach(b=>{
+    b.classList.remove('btn-primary');
+    b.classList.add('btn-muted');
+  });
+  document.querySelector(`[data-tab="${name}"]`).classList.remove('btn-muted');
+  document.querySelector(`[data-tab="${name}"]`).classList.add('btn-primary');
+}
+
+// ============ ACTIONS ============
+function rejectAction(){
+  if(!state.action){showToast('Scan a task first');return}
+  state.action.status='rejected';
+  document.getElementById('action-status').textContent='REJECTED';
+  showModal('Request Rejected','This payment request has been rejected. The transaction was not signed. No funds moved.',state.action.taskId,[{text:'Back to Now',cls:'btn btn-muted',fn:()=>{closeModal();switchScreen('now');state.action=null}}]);
+}
+
+function authorizeAction(){
+  if(!state.action){showToast('Scan a task first');return}
+  if(!state.review){showToast('Capture evidence first');return}
+  state.action.status='authorized';
+  document.getElementById('action-status').textContent='AUTHORIZED';
+  switchScreen('proof');
+  const sig='5Kx9'+Array.from({length:4},()=>Math.floor(Math.random()*16).toString(16)).join('')+'mPq2';
+  setTimeout(()=>{
+    const receipt={
+      id:state.action.taskId,
+      amount:(parseInt(state.action.rawAmount)/1e6).toLocaleString()+' SKR',
+      recipient:state.action.recipient.slice(0,4)+'...'+state.action.recipient.slice(-4),
+      evidence:state.evidence?state.evidence.manifestSha256.slice(0,8)+'...':'—',
+      sig:sig+' · 32 confirmations',
+      status:'confirmed'
+    };
+    state.receipts.unshift(receipt);
+    renderReceipts();
+    state.action.status='settled';
+    document.getElementById('action-status').textContent='SETTLED';
+    showModal('Receipt Generated','Evidence digest, transaction signature, and settlement status recorded. Export anytime from the Proof tab.',receipt.id,[{text:'View Proof',cls:'btn btn-primary',fn:()=>{closeModal();switchScreen('proof')}}]);
+  },1800);
+}
+
+function renderReceipts(){
+  const list=document.getElementById('receipts-list');
+  list.innerHTML=state.receipts.map(r=>`
+    <div class="receipt-card">
+      <div class="top">
+        <span class="id">${r.id}</span>
+        <span class="badge ${r.status}">${r.status.toUpperCase()}</span>
+      </div>
+      <div class="row"><span class="k">Amount</span><span class="v">${r.amount}</span></div>
+      <div class="row"><span class="k">Recipient</span><span class="v">${r.recipient}</span></div>
+      <div class="row"><span class="k">Evidence</span><span class="v" style="font-size:.65rem">${r.evidence}</span></div>
+      <div class="sig">${r.sig}</div>
+    </div>
+  `).join('');
+}
+
+// ============ MODAL ============
+function showModal(title,text,code,actions){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-text').textContent=text;
+  document.getElementById('modal-code').textContent=code;
+  const ac=document.getElementById('modal-actions');
+  ac.innerHTML='';
+  actions.forEach(a=>{
+    const b=document.createElement('button');
+    b.className=a.cls;
+    b.textContent=a.text;
+    b.onclick=a.fn;
+    ac.appendChild(b);
+  });
+  document.getElementById('modal').classList.add('active');
+}
+function closeModal(){document.getElementById('modal').classList.remove('active')}
+
+// ============ TOAST ============
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('active');
+  setTimeout(()=>t.classList.remove('active'),2500);
+}
+
+// ============ COUNTDOWN ============
+function updateCooldown(){
+  const remaining=state.cooldownEnd-Date.now();
+  if(remaining<=0){
+    document.getElementById('cooldown-timer').textContent='READY';
+    document.getElementById('cooldown-timer').classList.add('ready');
+    document.querySelector('.cooldown-card .badge').textContent='WITHDRAW READY';
+    document.querySelector('.cooldown-card .badge').classList.add('ready');
+    document.getElementById('cooldown-progress').style.width='100%';
+    return;
+  }
+  const h=Math.floor(remaining/3600000);
+  const m=Math.floor((remaining%3600000)/60000);
+  const s=Math.floor((remaining%60000)/1000);
+  document.getElementById('cooldown-timer').textContent=
+    String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  const total=48*3600*1000;
+  const elapsed=total-remaining;
+  document.getElementById('cooldown-progress').style.width=Math.min(100,(elapsed/total)*100)+'%';
+}
+setInterval(updateCooldown,1000);
+updateCooldown();
+
+// ============ MATRIX RAIN ============
+(function(){
+  const cv=document.getElementById('matrix-canvas');
+  if(!cv)return;
+  const ctx=cv.getContext('2d');
+  const chars='アイウエオカキクケコサシスセソ01<>[]{};/$#EF';
+  let cols,drops;
+  const resize=()=>{cv.width=cv.offsetWidth;cv.height=cv.offsetHeight;cols=Math.ceil(cv.width/14);drops=[];for(let i=0;i<cols;i++)drops[i]=Math.random()*-60};
+  resize();
+  window.addEventListener('resize',resize);
+  setInterval(()=>{
+    ctx.fillStyle='rgba(1,4,9,.08)';
+    ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.font='13px monospace';
+    for(let i=0;i<cols;i++){
+      const ch=chars[Math.random()*chars.length|0];
+      ctx.fillStyle=Math.random()>.97?'#c8ffd4':'rgba(0,255,65,.55)';
+      ctx.fillText(ch,i*14,drops[i]*14);
+      if(drops[i]*14>cv.height&&Math.random()>.975)drops[i]=0;
+      drops[i]++;
+    }
+  },55);
+})();
+
+// ============ REVEAL ============
+(function(){
+  const els=document.querySelectorAll('.reveal');
+  if(!('IntersectionObserver' in window)){els.forEach(e=>e.classList.add('in'));return}
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach(en=>{if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target)}});
+  },{threshold:.1,rootMargin:'0px 0px -60px 0px'});
+  els.forEach(e=>io.observe(e));
+})();
+
+// ============ SMOOTH SCROLL ============
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    const id=a.getAttribute('href');
+    if(id.length<2)return;
+    const t=document.querySelector(id);
+    if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth',block:'start'})}
+  });
+});
+
+// ============ YEAR ============
+document.getElementById('year').textContent=new Date().getFullYear();
+
+// ============ CHECKLIST ============
+document.querySelectorAll('.checklist li').forEach(li=>{
+  li.addEventListener('click',()=>li.classList.toggle('done'));
+});
+</script>
+</body>
+</html>
